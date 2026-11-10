@@ -1,4 +1,23 @@
 services:
+  website:
+    build:
+      context: ./website
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      TELESALES_WEBSITE_URL: ${TELESALES_WEBSITE_URL:-http://localhost:3000}
+      TELESALES_ODOO_BASE_URL: ${TELESALES_ODOO_BASE_URL:-http://web:8069}
+      TELESALES_JWT_ISSUER: ${TELESALES_JWT_ISSUER:-website}
+      TELESALES_JWT_AUDIENCE: ${TELESALES_JWT_AUDIENCE:-odoo}
+      TELESALES_JWT_TTL_SECONDS: ${TELESALES_JWT_TTL_SECONDS:-900}
+      TELESALES_JWT_PRIVATE_KEY_PEM: ${TELESALES_JWT_PRIVATE_KEY_PEM}
+      TELESALES_ADMIN_SUBJECTS: ${TELESALES_ADMIN_SUBJECTS:-}
+    depends_on:
+      web:
+        condition: service_healthy
+
   web:
     image: odoo:19.0
     depends_on:
@@ -6,7 +25,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     ports:
-      # Odoo chỉ nhận kết nối từ reverse proxy / Cloudflare Tunnel trên host.
+      # Reverse proxy online
       - "8069:8069"
       - "8072:8072"
     volumes:
